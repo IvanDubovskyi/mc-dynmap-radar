@@ -1,0 +1,24 @@
+{
+  "name": "mc-dynmap-scout",
+  "version": "1.0.0",
+  "description": "",
+  "exports": "./app.js",
+  "type": "module",
+  "scripts": {
+    "start": "node app.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^0.27.2",
+    "dotenv": "^16.0.1",
+    "firebase": "^9.9.3",
+    "geometric": "^2.4.0",
+    "lowdb": "^3.0.0",
+    "node-telegram-bot-api": "^0.58.0",
+    "prettier": "^2.7.1",
+    "telegraf": "^4.8.6"
+  }
+}
