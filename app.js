@@ -78,7 +78,7 @@ let intrudersInBorders = [];
 
 setInterval(() => {
   axios
-    .get(`http://borukva_minecraft.apexmc.co:3405/up/world/Borukva/${Date.now()}`)
+    .get(`${process.env.DYNMAP_URL}/${Date.now()}`)
     .then((res) => {
       let intruders = [];
       res.data.players.forEach((player) => {
