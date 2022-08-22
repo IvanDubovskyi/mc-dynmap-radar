@@ -1,8 +1,8 @@
 import dotenv from 'dotenv';
+
 dotenv.config();
 import axios from 'axios';
 import {pointInPolygon} from 'geometric';
-import fs from 'fs';
 import {Low, JSONFile} from 'lowdb'
 import {Telegraf} from 'telegraf';
 
@@ -76,12 +76,15 @@ const borders = [
 ];
 let intrudersInBorders = [];
 
-setInterval(() => {
+setInterval(() => scanMap(), 10000);
+
+function scanMap() {
   axios
     .get(`${process.env.DYNMAP_URL}/${Date.now()}`)
     .then((res) => {
       let intruders = [];
       res.data.players.forEach((player) => {
+        if (player?.world !== 'Borukva') return;
         if (whitelist.indexOf(player.name) === -1) {
           if (pointInPolygon([player.x, player.z], borders)) {
             if (intrudersInBorders.indexOf(player.name) === -1) {
@@ -98,7 +101,7 @@ setInterval(() => {
     .catch((err) => {
       console.log(err);
     });
-}, 10000);
+}
 
 function alert(intruder) {
   const message = `Intruder alert! ${intruder.name} at ${intruder.x}, ${intruder.y}, ${intruder.z}`;
