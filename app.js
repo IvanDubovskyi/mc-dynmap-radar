@@ -93,7 +93,7 @@ function scanMap() {
 }
 
 function alert(intruder) {
-  const message = `Intruder alert! ${intruder.name} at ${intruder.x}, ${intruder.y}, ${intruder.z}`;
+  const message = `Незваний гість! ${intruder.name} на координатах ${intruder.x}, ${intruder.y}, ${intruder.z}`;
   bot.telegram.sendMessage(process.env.MAIN_CHAT_ID, message);
   console.log(`[${new Date().toISOString()}] ${message}`);
 }
