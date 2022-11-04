@@ -1,78 +1,67 @@
 import dotenv from 'dotenv';
-
 dotenv.config();
 import axios from 'axios';
-import {pointInPolygon} from 'geometric';
-import {Low, JSONFile} from 'lowdb'
-import {Telegraf} from 'telegraf';
+import {pointInPolygon, polygonScale} from 'geometric';
+import bot from './bot.js';
+import db from './db.js';
 
-const whitelistFile = './db/whitelist.json';
-const whitelistAdapter = new JSONFile(whitelistFile);
-const whitelistDb = new Low(whitelistAdapter);
-await whitelistDb.read();
-let whitelist = whitelistDb.data;
+let whitelist = db.data;
 
-const bot = new Telegraf(process.env.BOT_TOKEN);
-bot.launch();
-
-bot.use(async (ctx, next) => {
-  const userId = ctx.update.message?.from.id;
-  const chatId = ctx.update.message.chat.id;
-  const update = ctx.update.message || ctx.update.callback_query;
-  if (userId == process.env.RIGHTFUL_USER_ID || chatId == process.env.MAIN_CHAT_ID) {
-    next();
-    return;
-  }
-
-  await ctx.reply("You don't have access. Go away.");
-  console.log(`[${new Date().toISOString()}] Unrightful usage! ${update.message.from.username}`);
-});
-
-bot.command('seewhitelist', (ctx) => {
-  console.log(ctx);
-  ctx.reply(whitelist.join(' \n'));
-});
-
-bot.command('addplayer', (ctx) => {
-  const user = ctx.update.message.from.username;
-  const playerName = ctx.update.message.text.split(' ')[1];
-
-  console.log(`[${user}] Adding ${playerName} to the whitelist!`);
-  ctx.reply(`Adding ${playerName} to the whitelist!`);
-  whitelist.push(playerName);
-  saveWhitelist();
-});
-
-bot.command('removeplayer', (ctx) => {
-  const user = ctx.update.message.from.username;
-  const playerName = ctx.update.message.text.split(' ')[1];
-  const playerIndex = whitelist.indexOf(playerName);
-
-  if (playerIndex !== -1) {
-    console.log(`[${user}] Removing ${playerName} from the whitelist!`);
-    ctx.reply(`Removing ${playerName} from the whitelist!`);
-    whitelist.splice(playerIndex, 1);
-  } else {
-    console.log(`Player ${playerName} wasn't in the whitelist.`);
-    ctx.reply(`Player ${playerName} wasn't in the whitelist.`);
-  }
-  saveWhitelist();
-});
-
-// const borders = [[-1216, -137], [-695, 40], [-624, 335], [-1206, 314]];
 const borders = [
-  [-897, -28],
-  [-820, 0],
-  [-757, -11],
-  [-724, -4],
-  [-672, 63],
-  [-642, 192],
-  [-746, 283],
-  [-969, 283],
-  [-1111, 193],
-  [-1079, 67],
-  [-996, 10],
-  [-995, -29],
+  [3894, -4691],
+  [3947, -4738],
+  [3989, -4747],
+  [4010, -4782],
+  [4009, -4820],
+  [3992, -4865],
+  [3976, -4890],
+  [3954, -4942],
+  [3972, -4972],
+  [3995, -5018],
+  [3965, -5085],
+  [3951, -5146],
+  [3873, -5159],
+  [3861, -5213],
+  [3784, -5279],
+  [3709, -5308],
+  [3662, -5311],
+  [3635, -5274],
+  [3575, -5216],
+  [3584, -5153],
+  [3608, -5133],
+  [3594, -5101],
+  [3584, -5059],
+  [3559, -5046],
+  [3534, -5025],
+  [3496, -5014],
+  [3482, -4980],
+  [3510, -4939],
+  [3539, -4940],
+  [3553, -4901],
+  [3575, -4830],
+  [3566, -4796],
+  [3569, -4762],
+  [3567, -4736],
+  [3568, -4719],
+  [3569, -4702],
+  [3593, -4693],
+  [3632, -4687],
+  [3651, -4686],
+  [3635, -4641],
+  [3621, -4618],
+  [3591, -4615],
+  [3552, -4616],
+  [3527, -4570],
+  [3569, -4510],
+  [3621, -4504],
+  [3674, -4501],
+  [3726, -4499],
+  [3770, -4507],
+  [3761, -4555],
+  [3779, -4572],
+  [3784, -4605],
+  [3813, -4639],
+  [3851, -4673]
 ];
 let intrudersInBorders = [];
 
@@ -86,7 +75,7 @@ function scanMap() {
       res.data.players.forEach((player) => {
         if (player?.world !== 'Borukva') return;
         if (whitelist.indexOf(player.name) === -1) {
-          if (pointInPolygon([player.x, player.z], borders)) {
+          if (pointInPolygon([player.x, player.z], polygonScale(borders, 1.2))) {
             if (intrudersInBorders.indexOf(player.name) === -1) {
               intruders.push(player);
             }
@@ -107,8 +96,4 @@ function alert(intruder) {
   const message = `Intruder alert! ${intruder.name} at ${intruder.x}, ${intruder.y}, ${intruder.z}`;
   bot.telegram.sendMessage(process.env.MAIN_CHAT_ID, message);
   console.log(`[${new Date().toISOString()}] ${message}`);
-}
-
-async function saveWhitelist() {
-  await whitelistDb.write();
 }
