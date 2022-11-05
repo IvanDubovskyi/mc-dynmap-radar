@@ -18,7 +18,7 @@ bot.use(async (ctx, next) => {
   }
 
   await ctx.reply('У вас немає прав.');
-  console.log(`[${new Date().toISOString()}] Використання без прав! ${update.message.from.username}`);
+  console.log(`[${new Date().toISOString()}] Використання без прав! ${update.message.from?.username ?? update.message.from.id}`);
 });
 
 bot.command('seewhitelist', (ctx) => {
