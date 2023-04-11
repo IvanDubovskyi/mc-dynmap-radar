@@ -1,7 +1,6 @@
 {
   "name": "mc-dynmap-scout",
   "version": "1.0.0",
-  "description": "",
   "exports": "./app.js",
   "type": "module",
   "scripts": {
@@ -17,6 +16,10 @@
     "geometric": "^2.4.0",
     "lowdb": "^3.0.0",
     "prettier": "^2.7.1",
+    "puppeteer": "^19.8.5",
     "telegraf": "^4.8.6"
-  }
+  },
+  "main": "app.js",
+  "devDependencies": {},
+  "description": ""
 }

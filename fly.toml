@@ -1,16 +1,11 @@
-# fly.toml file generated for mc-dynmap-scout on 2022-11-06T17:39:08+02:00
+# fly.toml file generated for mc-dynmap-scout-pbi on 2022-12-07T17:06:12+02:00
 
-app = "mc-dynmap-scout"
+app = "mc-dynmap-scout-pbi"
 kill_signal = "SIGINT"
 kill_timeout = 5
 processes = []
 
 [env]
-  PORT = "8080"
-
-[mounts]
-source="mc_dynmap_scout_data"
-destination="/"
 
 [experimental]
   allowed_public_ports = []

@@ -1,8 +1,10 @@
 import {JSONFile, Low} from 'lowdb';
 
-const file = './db/whitelist.json';
-const adapter = new JSONFile(file);
-const db = new Low(adapter);
-await db.read();
+const openDb = async (filePath) => {
+  const adapter = new JSONFile(filePath);
+  const db = new Low(adapter);
+  await db.read();
+  return db;
+};
 
-export default db;
+export default openDb;

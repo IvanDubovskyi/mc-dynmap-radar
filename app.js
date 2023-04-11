@@ -1,71 +1,143 @@
 import dotenv from 'dotenv';
 dotenv.config();
 import axios from 'axios';
-import {pointInPolygon, polygonScale} from 'geometric';
+import { pointInPolygon, polygonScale } from 'geometric';
 import bot from './bot.js';
-import db from './db.js';
+import openDb from './db.js';
 
+let db = await openDb('./db/admins.json');
+db = await openDb('./db/whitelist.json');
 let whitelist = db.data;
 
-const borders = [
-  [3894, -4691],
-  [3947, -4738],
-  [3989, -4747],
-  [4010, -4782],
-  [4009, -4820],
-  [3992, -4865],
-  [3976, -4890],
-  [3954, -4942],
-  [3972, -4972],
-  [3995, -5018],
-  [3965, -5085],
-  [3951, -5146],
-  [3873, -5159],
-  [3861, -5213],
-  [3784, -5279],
-  [3709, -5308],
-  [3662, -5311],
-  [3635, -5274],
-  [3575, -5216],
-  [3584, -5153],
-  [3608, -5133],
-  [3594, -5101],
-  [3584, -5059],
-  [3559, -5046],
-  [3534, -5025],
-  [3496, -5014],
-  [3482, -4980],
-  [3510, -4939],
-  [3539, -4940],
-  [3553, -4901],
-  [3575, -4830],
-  [3566, -4796],
-  [3569, -4762],
-  [3567, -4736],
-  [3568, -4719],
-  [3569, -4702],
-  [3593, -4693],
-  [3632, -4687],
-  [3651, -4686],
-  [3635, -4641],
-  [3621, -4618],
-  [3591, -4615],
-  [3552, -4616],
-  [3527, -4570],
-  [3569, -4510],
-  [3621, -4504],
-  [3674, -4501],
-  [3726, -4499],
-  [3770, -4507],
-  [3761, -4555],
-  [3779, -4572],
-  [3784, -4605],
-  [3813, -4639],
-  [3851, -4673]
+const borders_old = [
+  [-186, -927],
+  [-170, -1041],
+  [-148, -1101],
+  [-118, -1157],
+  [-84, -1211],
+  [-59, -1233],
+  [-21, -1244],
+  [39, -1257],
+  [73, -1271],
+  [125, -1289],
+  [181, -1294],
+  [354, -1294],
+  [405, -1241],
+  [430, -1185],
+  [446, -1126],
+  [444, -1090],
+  [574, -1090],
+  [575, -1216],
+  [703, -1217],
+  [705, -1088],
+  [709, -957],
+  [711, -893],
+  [698, -830],
+  [676, -769],
+  [657, -705],
+  [621, -642],
+  [548, -605],
+  [482, -631],
+  [427, -658],
+  [366, -658],
+  [304, -662],
+  [245, -665],
+  [212, -647],
+  [167, -629],
+  [111, -620],
+  [73, -591],
+  [42, -566],
+  [1, -555],
+  [-39, -569],
+  [-67, -563],
+  [-93, -603],
+  [-116, -653],
+  [-135, -687],
+  [-160, -714],
+  [-171, -738],
+  [-171, -776],
+  [-157, -813],
+  [-162, -866],
+  [-168, -900],
 ];
+
+
+const borders = [
+  [-107, -465],
+  [-103, -462],
+  [191, -462],
+  [198, -458],
+  [255, -399],
+  [446, -335],
+  [478, -304],
+  [577, -270],
+  [609, -302],
+  [628, -310],
+  [662, -321],
+  [707, -328],
+  [760, -347],
+  [784, -352],
+  [808, -362],
+  [837, -388],
+  [879, -412],
+  [920, -439],
+  [927, -442],
+  [947, -445],
+  [962, -445],
+  [994, -446],
+  [1007, -445],
+  [1042, -446],
+  [1073, -477],
+  [1076, -495],
+  [1089, -591],
+  [1090, -784],
+  [1074, -824],
+  [1027, -848],
+  [995, -895],
+  [972, -952],
+  [944, -981],
+  [930, -1026],
+  [896, -1061],
+  [881, -1105],
+  [785, -1201],
+  [737, -1217],
+  [641, -1313],
+  [611, -1360],
+  [415, -1360],
+  [344, -1436],
+  [295, -1433],
+  [216, -1392],
+  [145, -1392],
+  [1, -1510],
+  [1, -1545],
+  [1, -1564],
+  [0, -1579],
+  [-12, -1586],
+  [-49, -1574],
+  [-76, -1621],
+  [-204, -1621],
+  [-216, -1608],
+  [-226, -1555],
+  [-226, -1388],
+  [-174, -1355],
+  [-153, -1335],
+  [-153, -1320],
+  [-146, -1302],
+  [-85, -1212],
+  [-148, -1101],
+  [-169, -1040],
+  [-187, -928],
+  [-167, -901],
+  [-156, -813],
+  [-171, -776],
+  [-171, -737],
+  [-135, -688],
+  [-92, -603],
+];
+
 let intrudersInBorders = [];
 
-setInterval(() => scanMap(), 10000);
+setInterval(() => scanMap(), 10_000);
 
 function scanMap() {
   axios
@@ -74,17 +146,28 @@ function scanMap() {
       let intruders = [];
       res.data.players.forEach((player) => {
         if (player?.world !== 'Borukva') return;
-        if (whitelist.indexOf(player.name) === -1) {
-          if (pointInPolygon([player.x, player.z], polygonScale(borders, 1.2))) {
-            if (intrudersInBorders.indexOf(player.name) === -1) {
-              intruders.push(player);
-            }
+        if (whitelist.indexOf(player.name) !== -1) return;
+
+        let index = intrudersInBorders.map(e => e.name).indexOf(player.name);
+        if (index === -1) {
+          if (pointInPolygon([player.x, player.z], borders)) {
+            intruders.push(player);
           }
+        } else {
+          intrudersInBorders[index] = player;
         }
       });
+
       intruders.forEach((intruder) => {
-        intrudersInBorders.push(intruder.name);
+        intrudersInBorders.push(intruder);
         alert(intruder);
+      });
+      intrudersInBorders.forEach((intruder) => {
+        if (intruder.world === "Borukva")
+          if (pointInPolygon([intruder.x, intruder.z], polygonScale(borders, 1.1)))
+            return;
+        intrudersInBorders.pop(intruder);
+        cancel(intruder)
       });
     })
     .catch((err) => {
@@ -92,8 +175,16 @@ function scanMap() {
     });
 }
 
-function alert(intruder) {
-  const message = `Незваний гість! ${intruder.name} на координатах ${intruder.x}, ${intruder.y}, ${intruder.z}`;
+async function alert(intruder) {
+  const message = `Виявлено порушника ${intruder.name} [${intruder.x}, ${intruder.y}, ${intruder.z}]\n` +
+                  `/screenshot`;
+  await new Promise(resolve => setTimeout(resolve, 1_000));
+  bot.telegram.sendMessage(process.env.MAIN_CHAT_ID, message);
+  console.log(`[${new Date().toISOString()}] ${message}`);
+}
+
+function cancel(intruder) {
+  const message = `${intruder.name} покинув радіус дії станції`;
   bot.telegram.sendMessage(process.env.MAIN_CHAT_ID, message);
   console.log(`[${new Date().toISOString()}] ${message}`);
 }
